@@ -4,6 +4,25 @@ zoneId=""
 domain=""
 subDomains=("" "" "") # Array of strings
 
+echo "--- [ Deleting expired certs ] ---"
+now=$(date -u +%s)
+Data=$(curl -s https://api.cloudflare.com/client/v4/certificates?zone_id=$zoneId \
+    -H "Authorization: Bearer $cloudflareApiToken")
+
+echo "$Data" | jq -c '.result[]' | while read -r item; do
+    id=$(echo $item | jq -r '.id')
+    expiresOn=$(echo $item | jq -r '.expires_on | strptime("%Y-%m-%d %H:%M:%S %z UTC") | mktime')
+    hostname=$(echo $item | jq -r '.hostnames[0]')
+
+    if [[ $expiresOn < $now ]]; then
+        curl -s "https://api.cloudflare.com/client/v4/certificates/$id" \
+            -X DELETE \
+            -H "Authorization: Bearer $cloudflareApiToken"
+        rm -f /etc/ssl/certs/$hostname.pem
+    fi
+done
+echo
+
 echo "--- [ Deleting unused certs ] ---"
 PrivateKeysList=$(ls /etc/ssl/private | grep -E '^[^.]+\.[^.]+\.[^.]+.*\.key$' | sed "s/.key//" )
 CsrKeysList=$(ls /etc/ssl/csr | grep -E '^[^.]+\.[^.]+\.[^.]+.*\.csr$' | sed "s/.csr//" )
