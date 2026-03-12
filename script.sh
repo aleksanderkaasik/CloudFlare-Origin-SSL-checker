@@ -23,40 +23,6 @@ echo "$Data" | jq -c '.result[]' | while read -r item; do
 done
 echo
 
-echo "--- [ Deleting unused certs ] ---"
-PrivateKeysList=$(ls /etc/ssl/private | grep -E '^[^.]+\.[^.]+\.[^.]+.*\.key$' | sed "s/.key//" )
-CsrKeysList=$(ls /etc/ssl/csr | grep -E '^[^.]+\.[^.]+\.[^.]+.*\.csr$' | sed "s/.csr//" )
-PublicKeysList=$(ls /etc/ssl/certs | grep -E '^[^.]+\.[^.]+\.[^.]+.*\.pem$' | sed "s/.pem//" )
-
-ListDomain=$(printf "%s\n" ${PublicKeysList[@]} ${CsrKeysList[@]} ${PrivateKeysList[@]} | sort -u)
-validDomains=$(printf "%s.$domain\n" ${subDomains[@]})
-
-for host in ${ListDomain[@]}; do
-    echo "( $host )"
-    if [[ ${validDomains[@]} =~ ${host} ]]; then
-        echo "skipping host"
-        continue
-    fi
-    echo "Delete keys from local machine"
-    
-    rm -f "/etc/ssl/private/$host.key"
-    rm -f "/etc/ssl/csr/$host.csr"
-    rm -f "/etc/ssl/certs/$host.pem"
-
-    echo "Done"
-    Data=$(curl -s https://api.cloudflare.com/client/v4/certificates?zone_id=$zoneId \
-        -H "Authorization: Bearer $cloudflareApiToken")
-
-    ListId=$(echo $Data | jq -r ".result[] | select(.hostnames[] == \"$host\") | .id")
-    echo "Delete keys from cloudflare"
-    for id in ${ListId[@]}; do
-        DATA=$(curl -s "https://api.cloudflare.com/client/v4/certificates/$id" \
-        -X DELETE \
-        -H "Authorization: Bearer $cloudflareApiToken")
-    done
-done
-echo
-
 echo "--- [ Creating certs ] ---"
 for sub in ${subDomains[@]}; do
     echo "( $sub.$domain )"
