@@ -1,17 +1,17 @@
 {
-    "example.home": {
-      "id": "id example 1",
-      "sub-domains": [
-        "view",
-        "test",
-        "delete"
-      ]
-    },
-    "test.home": {
-      "id": "id example 2",
-      "sub-domains": [
-        "lab",
-        "later"
-      ]
-    }
+  "example.home": {
+    "id": "id example 1",
+    "sub-domains": [
+      "view",
+      "test",
+      "delete"
+    ]
+  },
+  "test.home": {
+    "id": "id example 2",
+    "sub-domains": [
+      "lab",
+      "later"
+    ]
   }
+}
