@@ -12,10 +12,9 @@ Before running the script, you will need to
 * Have a domain
     * After adding it to cloudflare, and copy `zone id`
 
-
 * Install needed packages to run
     ``` bash
-    sudo apt install -y jq
+    sudo apt install -y curl jq
     ```
 
 * Creating necessary directories
@@ -26,7 +25,9 @@ Before running the script, you will need to
 
 ## To run
 
-After getting all prerequisites, you should open the `script.sh` add them the script.
+Edit the `zoneConfig.json` with with your `zone id`, `zone name` and 'sub-domains'.
+
+After editing `zoneConfig.json`, you should open the `script.sh` add them the script.
 
 ```
 sudo bash script.sh
